@@ -16,7 +16,8 @@ btAdd.addEventListener('click', function(e)  {
             return;
         }
     }
-    
+
+    saveTasks();
 
     inputNewTask.value ='';
 
@@ -49,6 +50,8 @@ btAdd.addEventListener('click', function(e)  {
     const ULTaskList = document.getElementById('taskList');
     ULTaskList.appendChild(newLI);
 
+    saveTasks();
+
     //Donner le focus au champ newTask
     inputNewTask.focus();
 }); 
@@ -69,6 +72,8 @@ for(let i=0;i<btDeletes.length;i++) {
 function removeTask() {
     //Récupérer le LI pour lequel on a cliqué sur la corbeille
     let selectedLI = this.parentElement;
+   // selectedLI.remove();
+    saveTasks();
 
     //Sélectionner la liste des tâches
     const ULTaskList = document.getElementById('taskList');
@@ -93,3 +98,70 @@ input.addEventListener("keypress", function(e) {
         document.getElementById("btAdd").click();
     }
 });
+
+//SaveTasks()
+
+function saveTasks() {
+    const tasks = [];
+
+    document.querySelectorAll("#taskList li").forEach(li => {
+        tasks.push({
+            text: li.querySelector(".task").textContent,
+            done: li.querySelector(".task").classList.contains("done")    
+            
+
+        });
+    });
+
+    localStorage.setItem("tasks", JSON.stringify(tasks));
+}
+
+//LoadTasks()
+
+function loadTasks() {
+    const ULTaskList = document.getElementById('taskList');
+    ULTaskList.innerHTML = "";
+
+    const data = localStorage.getItem("tasks");
+    if (!data) return;
+
+    const tasks = JSON.parse(data);
+
+    tasks.forEach(task => {
+
+        const newLI = document.createElement('li');
+
+        const span = document.createElement('span');
+        span.classList.add('task');
+        span.textContent = task.text;
+
+        if (task.done) {
+            span.classList.add('done');
+        }
+
+        span.addEventListener('click', function() {
+            span.classList.toggle('done');
+            saveTasks(); // ✅ IMPORTANT
+        });
+
+        const btn = document.createElement('button');
+        btn.classList.add('btDelete');
+        btn.addEventListener('click', function() {
+            newLI.remove();
+            saveTasks(); // ✅ IMPORTANT
+        });
+
+        const iDelete = document.createElement('i');
+        iDelete.classList.add('bi', 'bi-trash3-fill');
+
+        btn.appendChild(iDelete);
+
+        newLI.appendChild(span);
+        newLI.appendChild(btn);
+
+        ULTaskList.appendChild(newLI);
+    });
+}
+//Charger au démarrage
+
+loadTasks();
